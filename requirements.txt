@@ -1,3 +1,5 @@
 discord
 dotenv
 boto3
+deep-translator
+pillow
