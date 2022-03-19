@@ -2,6 +2,7 @@ from discord.utils import get
 from dotenv import load_dotenv
 from config.Logging import saveLog
 from services.TwitterIntegration import get_updates
+from database.Connection import Connection
 import os
 from discord.ext import tasks, commands
 import discord
@@ -34,16 +35,19 @@ class WarzoneDiscordBot(discord.Client):
 
         # start the task to run in the background
         self.search_updates.start()
+        self.conn = Connection()
 
     async def on_ready(self):
         saveLog('WarzoneDiscordBot.log', f'Logged in as {self.user.name} ({self.user.id})')
 
-    @tasks.loop(seconds=300)
+    @tasks.loop(seconds=2)
     async def search_updates(self):
         warzone_recent_updates = get_updates()
         if 'data' in warzone_recent_updates and len(warzone_recent_updates['data']) > 0:
             for update in warzone_recent_updates['data']:
-                await check_and_notify_channels(update)
+                if self.conn.get_tweet(update['id']) is None:
+                    await check_and_notify_channels(update)
+                    self.conn.put_tweet(update['id'])
 
     @search_updates.before_loop
     async def before_my_task(self):

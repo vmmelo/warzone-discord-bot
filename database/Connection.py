@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 
 class Connection:
     def __init__(self):
-        saveLog('connection', 'entrou init con')
+        saveLog('db.log', 'entrou init con')
         self.client = boto3.client('dynamodb', endpoint_url='http://localhost:8000')
         self.res = boto3.resource('dynamodb', endpoint_url='http://localhost:8000')
         self.create_tweets_table()
@@ -21,20 +21,12 @@ class Connection:
                     {
                         'AttributeName': 'id',
                         'AttributeType': 'S',
-                    },
-                    {
-                        'AttributeName': 'created_at',
-                        'AttributeType': 'S',
-                    },
+                    }
                 ],
                 KeySchema=[
                     {
                         'AttributeName': 'id',
                         'KeyType': 'HASH',
-                    },
-                    {
-                        'AttributeName': 'created_at',
-                        'KeyType': 'RANGE',
                     },
                 ],
                 ProvisionedThroughput={
@@ -49,10 +41,11 @@ class Connection:
             res = boto3.resource('dynamodb', endpoint_url="http://localhost:8000")
 
         table = res.Table('Tweets')
+        current = datetime.datetime.now()
         response = table.put_item(
             Item={
                 'id': tweet_id,
-                'created_at': datetime.datetime.now(),
+                'created_at': current.strftime('%Y-%m-%d %H:%M:%S'),
             }
         )
         return response
@@ -66,6 +59,6 @@ class Connection:
         try:
             response = table.get_item(Key={'id': tweet_id})
         except ClientError as e:
-            print(e.response['Error']['Message'])
+            saveLog('db.log', e.response['Error']['Message'], 'error')
         else:
-            return response['Item']
+            return None if 'Item' not in response else response['Item']
