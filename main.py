@@ -13,7 +13,7 @@ load_dotenv()
 async def send_attachments(channel, attachments):
     for attachment in attachments:
         if attachment['type'] == 'photo':
-            channel.send(content=attachment['url'])
+            await channel.send(content=attachment['url'])
 
 
 async def check_and_notify_channels(update):
