@@ -1,15 +1,30 @@
 import boto3
 import datetime
+import os
+from dotenv import load_dotenv
 from config.Logging import saveLog
 from botocore.exceptions import ClientError
 
+load_dotenv()
 
 class Connection:
     def __init__(self):
         saveLog('db.log', 'entrou init con')
-        self.client = boto3.client('dynamodb', endpoint_url='http://localhost:8000')
-        self.res = boto3.resource('dynamodb', endpoint_url='http://localhost:8000')
+        self.client = self.get_client()
+        self.res = self.get_resource()
         self.create_tweets_table()
+
+    def get_client(self):
+        if os.environ.get('APP_ENV') == 'production':
+            return boto3.client('dynamodb')
+        else:
+            return boto3.client('dynamodb', endpoint_url='http://localhost:8000')
+
+    def get_resource(self):
+        if os.environ.get('APP_ENV') == 'production':
+            return boto3.resource('dynamodb')
+        else:
+            return boto3.resource('dynamodb', endpoint_url='http://localhost:8000')
 
     def create_tweets_table(self):
         table_name = 'Tweets'
@@ -38,7 +53,7 @@ class Connection:
 
     def put_tweet(self, tweet_id, res=None):
         if not res:
-            res = boto3.resource('dynamodb', endpoint_url="http://localhost:8000")
+            res = self.get_resource()
 
         table = res.Table('Tweets')
         current = datetime.datetime.now()
@@ -52,7 +67,7 @@ class Connection:
 
     def get_tweet(self, tweet_id, res=None):
         if not res:
-            res = boto3.resource('dynamodb', endpoint_url="http://localhost:8000")
+            res = self.get_resource()
 
         table = res.Table('Tweets')
 

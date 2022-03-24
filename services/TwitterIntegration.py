@@ -7,9 +7,7 @@ from dotenv import load_dotenv
 from deep_translator import GoogleTranslator
 load_dotenv()
 
-# To set your environment variables in your terminal run the following line:
-# export 'BEARER_TOKEN'='<your_bearer_token>'
-bearer_token = os.environ.get("BEARER_TOKEN")
+bearer_token = os.environ.get("TWITTER_BEARER_TOKEN")
 ravenSoftwareID = '19136295'
 
 
