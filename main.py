@@ -28,7 +28,7 @@ class WarzoneDiscordBot(discord.Client):
             for update in warzone_recent_updates['data']:
                 if self.conn.get_tweet(update['id']) is None:
                     await self.check_and_notify_channels(update)
-                    self.conn.put_tweet(update['id'])
+                    self.conn.put_tweet(update['id'], update)
 
     async def check_and_notify_channels(self, update):
         msg_content = f'{update["text"]}'

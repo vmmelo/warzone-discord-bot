@@ -16,13 +16,21 @@ class Connection:
 
     def get_client(self):
         if os.environ.get('APP_ENV') == 'production':
-            return boto3.client('dynamodb')
+            return boto3.client('dynamodb',
+                                region_name='us-east-2',
+                                aws_access_key_id=os.environ.get('AWS_ACCESS_ID'),
+                                aws_secret_access_key= os.environ.get('AWS_ACCESS_KEY')
+                                )
         else:
             return boto3.client('dynamodb', endpoint_url='http://localhost:8000')
 
     def get_resource(self):
         if os.environ.get('APP_ENV') == 'production':
-            return boto3.resource('dynamodb')
+            return boto3.resource('dynamodb',
+                                region_name='us-east-2',
+                                aws_access_key_id=os.environ.get('AWS_ACCESS_ID'),
+                                aws_secret_access_key= os.environ.get('AWS_ACCESS_KEY')
+                                )
         else:
             return boto3.resource('dynamodb', endpoint_url='http://localhost:8000')
 
@@ -50,8 +58,9 @@ class Connection:
                 },
                 TableName=table_name,
             )
+            saveLog('db.log', 'created tweets table')
 
-    def put_tweet(self, tweet_id, res=None):
+    def put_tweet(self, tweet_id, content={}, res=None):
         if not res:
             res = self.get_resource()
 
@@ -61,6 +70,7 @@ class Connection:
             Item={
                 'id': tweet_id,
                 'created_at': current.strftime('%Y-%m-%d %H:%M:%S'),
+                'content': content
             }
         )
         return response
