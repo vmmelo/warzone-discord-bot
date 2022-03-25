@@ -22,13 +22,16 @@ class WarzoneDiscordBot(discord.Client):
 
     @tasks.loop(seconds=300)
     async def search_updates(self):
-        saveLog('WarzoneDiscordBot.log', f'begin search_updates task')
-        warzone_recent_updates = get_updates()
-        if 'data' in warzone_recent_updates and len(warzone_recent_updates['data']) > 0:
-            for update in warzone_recent_updates['data']:
-                if self.conn.get_tweet(update['id']) is None:
-                    await self.check_and_notify_channels(update)
-                    self.conn.put_tweet(update['id'], update)
+        try:
+            saveLog('WarzoneDiscordBot.log', f'begin search_updates task')
+            warzone_recent_updates = get_updates()
+            if 'data' in warzone_recent_updates and len(warzone_recent_updates['data']) > 0:
+                for update in warzone_recent_updates['data']:
+                    if self.conn.get_tweet(update['id']) is None:
+                        await self.check_and_notify_channels(update)
+                        self.conn.put_tweet(update['id'], update)
+        except Exception as e:
+            saveLog('WarzoneDiscordBot.log', 'Failed to search updates: ' + str(e))
 
     async def check_and_notify_channels(self, update):
         msg_content = f'{update["text"]}'
