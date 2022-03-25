@@ -31,7 +31,7 @@ class WarzoneDiscordBot(discord.Client):
                         await self.check_and_notify_channels(update)
                         self.conn.put_tweet(update['id'], update)
         except Exception as e:
-            saveLog('WarzoneDiscordBot.log', 'Failed to search updates: ' + str(e))
+            saveLog('WarzoneDiscordBot.log', 'Failed to search updates: ' + str(e), 'error')
 
     async def check_and_notify_channels(self, update):
         msg_content = f'{update["text"]}'
