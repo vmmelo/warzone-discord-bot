@@ -1,6 +1,6 @@
 from discord.utils import get
 from dotenv import load_dotenv
-from config.Logging import saveLog
+from config.Logging import saveLog, sendLogDiscordUser
 from services.TwitterIntegration import get_updates
 from database.Connection import Connection
 import os
@@ -30,6 +30,10 @@ class WarzoneDiscordBot(discord.Client):
                     if self.conn.get_tweet(update['id']) is None:
                         await self.check_and_notify_channels(update)
                         self.conn.put_tweet(update['id'], update)
+                    else:
+                        await sendLogDiscordUser(client, f'Already sent {update["id"]}')
+            else:
+                await sendLogDiscordUser(client, "Didn't found warzone updates for this time")
         except Exception as e:
             saveLog('WarzoneDiscordBot.log', 'Failed to search updates: ' + str(e), 'error')
 
