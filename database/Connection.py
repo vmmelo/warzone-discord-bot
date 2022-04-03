@@ -13,6 +13,7 @@ class Connection:
         self.client = self.get_client()
         self.res = self.get_resource()
         self.create_tweets_table()
+        self.create_loadouts_table()
 
     def get_client(self):
         if os.environ.get('APP_ENV') == 'production':
@@ -59,6 +60,32 @@ class Connection:
                 TableName=table_name,
             )
             saveLog('db.log', 'created tweets table')
+
+    def create_loadouts_table(self):
+        table_name = 'Loadouts'
+        existing_tables = self.client.list_tables()['TableNames']
+
+        if table_name not in existing_tables:
+            response = self.client.create_table(
+                AttributeDefinitions=[
+                    {
+                        'AttributeName': 'weapon',
+                        'AttributeType': 'S',
+                    }
+                ],
+                KeySchema=[
+                    {
+                        'AttributeName': 'weapon',
+                        'KeyType': 'HASH',
+                    },
+                ],
+                ProvisionedThroughput={
+                    'ReadCapacityUnits': 1,
+                    'WriteCapacityUnits': 1,
+                },
+                TableName=table_name,
+            )
+            saveLog('db.log', 'created loadouts table')
 
     def put_tweet(self, tweet_id, content={}, res=None):
         if not res:
