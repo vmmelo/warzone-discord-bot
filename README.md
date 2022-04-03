@@ -1,5 +1,6 @@
-### useful commands dynamodb
+### Manage dynamodb locally
+docker-compose up -d
 
-aws dynamodb scan --table-name Tweets --endpoint-url http://localhost:8000
+npm install -g dynamodb-admin
 
-aws dynamodb delete-table --table-name Tweets --endpoint-url http://localhost:8000
+dynamodb-admin
