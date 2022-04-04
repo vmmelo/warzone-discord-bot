@@ -29,7 +29,7 @@ class WarzoneDiscordBot(discord.Client):
                 for update in warzone_recent_updates['data']:
                     if self.conn.get_tweet(update['id']) is None:
                         await self.check_and_notify_channels(update)
-                        self.conn.put_tweet(update['id'], update)
+                        self.conn.save_tweet(update['id'], update)
                     else:
                         await sendLogDiscordUser(client, f'Already sent {update["id"]}')
             else:

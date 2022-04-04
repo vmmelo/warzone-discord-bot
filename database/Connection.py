@@ -71,12 +71,20 @@ class Connection:
                     {
                         'AttributeName': 'weapon',
                         'AttributeType': 'S',
+                    },
+                    {
+                        'AttributeName': 'alias',
+                        'AttributeType': 'S',
                     }
                 ],
                 KeySchema=[
                     {
                         'AttributeName': 'weapon',
                         'KeyType': 'HASH',
+                    },
+                    {
+                        'AttributeName': 'alias',
+                        'KeyType': 'RANGE',
                     },
                 ],
                 ProvisionedThroughput={
@@ -87,7 +95,7 @@ class Connection:
             )
             saveLog('db.log', 'created loadouts table')
 
-    def put_tweet(self, tweet_id, content={}, res=None):
+    def save_tweet(self, tweet_id, content={}, res=None):
         if not res:
             res = self.get_resource()
 
@@ -110,6 +118,25 @@ class Connection:
 
         try:
             response = table.get_item(Key={'id': tweet_id})
+        except ClientError as e:
+            saveLog('db.log', e.response['Error']['Message'], 'error')
+        else:
+            return None if 'Item' not in response else response['Item']
+
+
+    def save_loadout(self, item, res=None):
+        if not res:
+            res = self.get_resource()
+        table = res.Table('Loadouts')
+        response = table.put_item(Item=item)
+        return response
+
+    def get_loadout(self, alias, res=None):
+        if not res:
+            res = self.get_resource()
+        table = res.Table('Loadouts')
+        try:
+            response = table.get_item(Key={'alias': alias})
         except ClientError as e:
             saveLog('db.log', e.response['Error']['Message'], 'error')
         else:

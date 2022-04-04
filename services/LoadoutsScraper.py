@@ -47,3 +47,20 @@ def get_loadouts(type=''):
                 weaponDict[header] = col_text
         loadouts.append(weaponDict)
     return loadouts
+
+def get_weapon_alias(weapon):
+    aliases = {
+
+    }
+    if weapon in aliases:
+        return aliases[weapon]
+    return weapon
+
+def format_loadout_to_db(loadout):
+    item = {
+        'weapon': loadout['Gun'],
+        'alias': get_weapon_alias(loadout['Gun']),
+        'content': loadout
+    }
+    return item
+
