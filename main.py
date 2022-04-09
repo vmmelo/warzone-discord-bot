@@ -23,6 +23,7 @@ class WarzoneDiscordBot(discord.Client):
     @tasks.loop(seconds=300)
     async def search_updates(self):
         try:
+            await sendLogDiscordUser(client, "Searching updates.....")
             saveLog('WarzoneDiscordBot.log', f'begin search_updates task')
             warzone_recent_updates = get_updates()
             number_of_updates_sent = 0
