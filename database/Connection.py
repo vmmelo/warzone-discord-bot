@@ -20,7 +20,7 @@ class Connection:
             return boto3.client('dynamodb',
                                 region_name='us-east-2',
                                 aws_access_key_id=os.environ.get('AWS_ACCESS_ID'),
-                                aws_secret_access_key= os.environ.get('AWS_ACCESS_KEY')
+                                aws_secret_access_key=os.environ.get('AWS_ACCESS_KEY')
                                 )
         else:
             return boto3.client('dynamodb', endpoint_url='http://localhost:8000')
@@ -72,19 +72,11 @@ class Connection:
                         'AttributeName': 'weapon',
                         'AttributeType': 'S',
                     },
-                    {
-                        'AttributeName': 'alias',
-                        'AttributeType': 'S',
-                    }
                 ],
                 KeySchema=[
                     {
                         'AttributeName': 'weapon',
                         'KeyType': 'HASH',
-                    },
-                    {
-                        'AttributeName': 'alias',
-                        'KeyType': 'RANGE',
                     },
                 ],
                 ProvisionedThroughput={
@@ -95,11 +87,8 @@ class Connection:
             )
             saveLog('db.log', 'created loadouts table')
 
-    def save_tweet(self, tweet_id, content={}, res=None):
-        if not res:
-            res = self.get_resource()
-
-        table = res.Table('Tweets')
+    def save_tweet(self, tweet_id, content={}):
+        table = self.res.Table('Tweets')
         current = datetime.datetime.now()
         response = table.put_item(
             Item={
@@ -110,33 +99,23 @@ class Connection:
         )
         return response
 
-    def get_tweet(self, tweet_id, res=None):
-        if not res:
-            res = self.get_resource()
-
-        table = res.Table('Tweets')
-
+    def get_tweet(self, tweet_id):
         try:
-            response = table.get_item(Key={'id': tweet_id})
+            response = self.client.get_item(TableName='Tweets', Key={'id': tweet_id})
         except ClientError as e:
             saveLog('db.log', e.response['Error']['Message'], 'error')
         else:
             return None if 'Item' not in response else response['Item']
 
 
-    def save_loadout(self, item, res=None):
-        if not res:
-            res = self.get_resource()
-        table = res.Table('Loadouts')
+    def save_loadout(self, item):
+        table = self.res.Table('Loadouts')
         response = table.put_item(Item=item)
         return response
 
-    def get_loadout(self, alias, res=None):
-        if not res:
-            res = self.get_resource()
-        table = res.Table('Loadouts')
+    def get_loadout(self, alias):
         try:
-            response = table.get_item(Key={'alias': alias})
+            response = self.client.get_item(TableName='Loadouts', Key={'alias': alias})
         except ClientError as e:
             saveLog('db.log', e.response['Error']['Message'], 'error')
         else:

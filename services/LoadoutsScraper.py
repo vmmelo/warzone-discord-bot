@@ -48,6 +48,7 @@ def get_loadouts(type=''):
         loadouts.append(weaponDict)
     return loadouts
 
+
 def get_weapon_alias(weapon):
     aliases = {
 
@@ -55,6 +56,7 @@ def get_weapon_alias(weapon):
     if weapon in aliases:
         return aliases[weapon]
     return weapon
+
 
 def format_loadout_to_db(loadout):
     item = {
