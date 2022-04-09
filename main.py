@@ -37,7 +37,7 @@ class WarzoneDiscordBot(discord.Client):
             else:
                 await sendLogDiscordUser(client, "Didn't found warzone updates")
                 
-            if number_of_updates_sent != 0:
+            if number_of_updates_sent == 0:
                 await sendLogDiscordUser(client, "All updates already sent")
         except Exception as e:
             saveLog('WarzoneDiscordBot.log', 'Failed to search updates: ' + str(e), 'error')
