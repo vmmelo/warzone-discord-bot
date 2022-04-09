@@ -101,7 +101,7 @@ class Connection:
 
     def get_tweet(self, tweet_id):
         try:
-            response = self.client.get_item(TableName='Tweets', Key={'id': tweet_id})
+            response = self.client.get_item(TableName='Tweets', Key={'id': {'S': tweet_id}})
         except ClientError as e:
             saveLog('db.log', e.response['Error']['Message'], 'error')
         else:
@@ -115,7 +115,7 @@ class Connection:
 
     def get_loadout(self, alias):
         try:
-            response = self.client.get_item(TableName='Loadouts', Key={'alias': alias})
+            response = self.client.get_item(TableName='Loadouts', Key={'alias': {'S': alias}})
         except ClientError as e:
             saveLog('db.log', e.response['Error']['Message'], 'error')
         else:
