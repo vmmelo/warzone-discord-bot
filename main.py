@@ -25,15 +25,19 @@ class WarzoneDiscordBot(discord.Client):
         try:
             saveLog('WarzoneDiscordBot.log', f'begin search_updates task')
             warzone_recent_updates = get_updates()
+            number_of_updates_sent = 0
             if 'data' in warzone_recent_updates and len(warzone_recent_updates['data']) > 0:
                 for update in warzone_recent_updates['data']:
                     if self.conn.get_tweet(update['id']) is None:
                         await self.check_and_notify_channels(update)
                         self.conn.save_tweet(update['id'], update)
-                    else:
-                        await sendLogDiscordUser(client, f'Already sent {update["id"]}')
+                        number_of_updates_sent = number_of_updates_sent + 1
+                        await sendLogDiscordUser(client, "New updates sent :)")
             else:
-                await sendLogDiscordUser(client, "Didn't found warzone updates for this time")
+                await sendLogDiscordUser(client, "Didn't found warzone updates")
+                
+            if number_of_updates_sent != 0:
+                await sendLogDiscordUser(client, "All updates already sent")
         except Exception as e:
             saveLog('WarzoneDiscordBot.log', 'Failed to search updates: ' + str(e), 'error')
 
