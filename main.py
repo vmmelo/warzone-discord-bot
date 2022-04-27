@@ -9,6 +9,7 @@ import discord
 
 load_dotenv()
 
+
 class WarzoneDiscordBot(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -36,7 +37,7 @@ class WarzoneDiscordBot(discord.Client):
                         await sendLogDiscordUser(client, "New updates sent :)")
             else:
                 await sendLogDiscordUser(client, "Didn't found warzone updates")
-                
+
             if number_of_updates_sent == 0:
                 await sendLogDiscordUser(client, "All updates already sent")
         except Exception as e:
@@ -47,7 +48,7 @@ class WarzoneDiscordBot(discord.Client):
         app_environ = os.environ.get('APP_ENV')
         if app_environ == 'development':
             return
-        guilds=sorted(client.guilds, key=lambda guild: guild.name == 'A Raleta', reverse=True)
+        guilds = sorted(client.guilds, key=lambda guild: guild.name == 'A Raleta', reverse=True)
         for guild in guilds:
             channel = get(guild.text_channels, name='warzone-updates')
             if app_environ == 'staging' and guild.name != 'A Raleta':
