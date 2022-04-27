@@ -83,7 +83,7 @@ def format_tweet_result(result):
 
 
 def get_updates():
-    url = create_url("(#warzone) (from:ravensoftware)")
+    url = create_url("(#warzone OR caldera OR rebirth) (from:ravensoftware)")
     params = get_params()
     response = connect_to_endpoint(url, params)
     saveLog('twitterIntegration.log', response)
