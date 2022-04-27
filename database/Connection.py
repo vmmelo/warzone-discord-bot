@@ -16,7 +16,7 @@ class Connection:
         self.create_loadouts_table()
 
     def get_client(self):
-        if os.environ.get('APP_ENV') == 'production':
+        if os.environ.get('APP_ENV') != 'development':
             return boto3.client('dynamodb',
                                 region_name='us-east-2',
                                 aws_access_key_id=os.environ.get('AWS_ACCESS_ID'),
@@ -26,7 +26,7 @@ class Connection:
             return boto3.client('dynamodb', endpoint_url='http://localhost:8000')
 
     def get_resource(self):
-        if os.environ.get('APP_ENV') == 'production':
+        if os.environ.get('APP_ENV') != 'development':
             return boto3.resource('dynamodb',
                                 region_name='us-east-2',
                                 aws_access_key_id=os.environ.get('AWS_ACCESS_ID'),
