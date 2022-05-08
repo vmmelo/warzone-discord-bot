@@ -1,3 +1,6 @@
+from time import sleep
+
+from discord import client
 from discord.utils import get
 from dotenv import load_dotenv
 from config.Logging import saveLog, sendLogDiscordUser
@@ -15,12 +18,25 @@ class WarzoneDiscordBot(discord.Client):
         super().__init__(*args, **kwargs)
 
         # start the task to run in the background
-        self.search_updates.start()
+        # self.search_updates.start()
         self.conn = Connection()
 
     async def on_ready(self):
         saveLog('WarzoneDiscordBot.log', f'Logged in as {self.user.name} ({self.user.id})')
 
+    async def on_message(self, message):
+        try:
+            author = message.author
+            if message.content == 'balaozinho':
+                voiceChannel = author.voice.channel
+                vc = await voiceChannel.connect()
+                vc.play(discord.FFmpegPCMAudio(executable= os.path.join('ffmpeg/bin/ffmpeg.exe'),source=os.path.join('balaozinhoooo.mp3')))
+                # Sleep while audio is playing.
+                while vc.is_playing():
+                    sleep(.1)
+                await vc.disconnect()
+        except Exception as e:
+            saveLog('WarzoneDiscordBot.log', str(e))
     @tasks.loop(seconds=300)
     async def search_updates(self):
         try:
