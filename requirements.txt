@@ -4,3 +4,4 @@ boto3
 deep-translator
 pillow
 selenium
+bs4
