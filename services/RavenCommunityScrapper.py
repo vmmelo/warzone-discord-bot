@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import textwrap
 import re
+from services.DiscordMessager import notify_channels
 
 
 class RavenCommunityScrapper:
@@ -81,22 +82,21 @@ class RavenCommunityScrapper:
                 if 'horizontal-long-line.png' in src:
                     continue
                 notes_object[actual_section]['images'].append(self.format_content_url(src))
-        for note in notes_object:
-            notes_object[note]['text'] = self.split_text_limit_characters(notes_object[note]['text'])
         return notes_object
 
-    def send_updates(self, posts_object, discord_client=None ):
+    async def send_updates_discord(self, posts_object, discord_client=None):
         for post in posts_object:
-            if not post.text:
+            if not posts_object[post]['text']:
                 continue
-            # check post already sent
+            # TODO check post already sent
             if True:
-                text_splitted = self.split_text_limit_characters(post.text)
+                text_splitted = self.split_text_limit_characters(posts_object[post]['text'])
                 for msg in text_splitted:
-                    discord_client
+                    await notify_channels(discord_client, msg)
+                for img in posts_object[post]['images']:
+                    await notify_channels(discord_client, img)
 
-
-    def scrap(self, discord_client=None):
+    async def search_updates_raven_website(self, discord_client=None):
         for post in self.posts:
             updated_date = self.get_post_updated_date(post.find(class_='post-feature-date') or
                                                       post.find(class_='post-date'))
@@ -108,10 +108,7 @@ class RavenCommunityScrapper:
                     continue
                 if content.find(class_='blog-body'):
                     posts_object = self.read_patch_notes(content.find(class_='blog-body'))
-                    self.send_updates(posts_object, discord_client)
+                    await self.send_updates_discord(posts_object, discord_client)
 
                 if content.find(class_='blog-body-container'):
                     self.read_blog_article(content.find(class_='body-content'))
-
-scp = RavenCommunityScrapper()
-scp.scrap()

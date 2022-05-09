@@ -1,14 +1,19 @@
 import requests
 import os
 from config.Logging import saveLog
-import json
+from discord.utils import get
 import urllib.parse
 from dotenv import load_dotenv
 from deep_translator import GoogleTranslator
+
+from database.Connection import Connection
+from services.DiscordMessager import send_log_discord_user
+
 load_dotenv()
 
 bearer_token = os.environ.get("TWITTER_BEARER_TOKEN")
 ravenSoftwareID = '19136295'
+conn = Connection()
 
 
 def create_url(query="all"):
@@ -90,5 +95,48 @@ def get_updates():
     format_tweet_result(response)
     return response
 
-get_updates()
-# (#warzone) (from:ravensoftware) until:2022-03-07 since:2022-03-07 -filter:replies
+
+async def check_and_notify_channels(client, update):
+    msg_content = f'{update["text"]}'
+    app_environ = os.environ.get('APP_ENV')
+    if app_environ == 'development':
+        return
+    guilds = sorted(client.guilds, key=lambda guild: guild.name == 'A Raleta', reverse=True)
+    for guild in guilds:
+        channel = get(guild.text_channels, name='warzone-updates')
+        if app_environ == 'staging' and guild.name != 'A Raleta':
+            continue
+        if channel is None:
+            channel = await guild.create_text_channel('warzone-updates')
+            saveLog('WarzoneDiscordBot.log', f'created channel warzone-updates in guild {guild.name}')
+        await channel.send(msg_content)
+        if 'attachments' in update:
+            await send_attachments(channel, update['attachments'])
+
+
+async def send_attachments(channel, attachments):
+    for attachment in attachments:
+        if attachment['type'] == 'photo':
+            await channel.send(content=attachment['url'])
+
+
+async def search_twitter_updates(client):
+    try:
+        await send_log_discord_user(client, "Searching updates.....")
+        saveLog('WarzoneDiscordBot.log', f'begin search_updates task')
+        warzone_recent_updates = get_updates()
+        number_of_updates_sent = 0
+        if 'data' in warzone_recent_updates and len(warzone_recent_updates['data']) > 0:
+            for update in warzone_recent_updates['data']:
+                if conn.get_tweet(update['id']) is None:
+                    await check_and_notify_channels(client, update)
+                    conn.save_tweet(update['id'], update)
+                    number_of_updates_sent = number_of_updates_sent + 1
+                    await send_log_discord_user(client, "New updates sent :)")
+        else:
+            await send_log_discord_user(client, "Didn't found warzone updates")
+
+        if number_of_updates_sent == 0:
+            await send_log_discord_user(client, "All updates already sent")
+    except Exception as e:
+        saveLog('WarzoneDiscordBot.log', 'Failed to search updates: ' + str(e), 'error')

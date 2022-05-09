@@ -19,8 +19,3 @@ def saveLog(filename, content, log_type='info'):
         logging.warning(content)
     else:
         logging.info(content)
-
-
-async def sendLogDiscordUser(client, content):
-    user = await client.fetch_user(int(os.environ.get('USER_ID')))
-    await user.send(content)
