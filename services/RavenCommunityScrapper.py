@@ -4,6 +4,7 @@ from datetime import datetime
 import textwrap
 import re
 from services.DiscordMessenger import notify_channels
+from googletrans import Translator
 
 
 class RavenCommunityScrapper:
@@ -90,11 +91,23 @@ class RavenCommunityScrapper:
                 continue
             # TODO check post already sent
             if True:
-                text_splitted = self.split_text_limit_characters(posts_object[post]['text'])
+                # TODO translate text by guild
+                text = posts_object[post]['text']
+                text_splitted = self.split_text_limit_characters(text)
                 for msg in text_splitted:
                     await notify_channels(discord_client, msg)
                 for img in posts_object[post]['images']:
                     await notify_channels(discord_client, img)
+
+    def get_translations(self, posts_object):
+        translator = Translator()
+        for post in posts_object:
+            posts_object[post]['translations'] = {}
+            target_languages = ['pt', 'fr', 'es']
+            for target_language in target_languages:
+                posts_object[post]['translations'][target_language] = \
+                    translator.translate(posts_object[post]['text'], src='en', dest=target_language).text
+        return posts_object
 
     async def search_updates_raven_website(self, discord_client=None):
         for post in self.posts:
@@ -108,6 +121,7 @@ class RavenCommunityScrapper:
                     continue
                 if content.find(class_='blog-body'):
                     posts_object = self.read_patch_notes(content.find(class_='blog-body'))
+                    posts_object = self.get_translations(posts_object)
                     await self.send_updates_discord(posts_object, discord_client)
 
                 if content.find(class_='blog-body-container'):
