@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from deep_translator import GoogleTranslator
 
 from database.Connection import Connection
-from services.DiscordMessager import send_log_discord_user
+from services.DiscordMessenger import send_log_discord_user
 
 load_dotenv()
 

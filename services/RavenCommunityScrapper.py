@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import textwrap
 import re
-from services.DiscordMessager import notify_channels
+from services.DiscordMessenger import notify_channels
 
 
 class RavenCommunityScrapper:
