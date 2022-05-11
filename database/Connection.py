@@ -14,6 +14,7 @@ class Connection:
         self.res = self.get_resource()
         self.create_tweets_table()
         self.create_loadouts_table()
+        self.create_guild_settings_table()
 
     def get_client(self):
         if os.environ.get('APP_ENV') != 'development':
@@ -120,3 +121,49 @@ class Connection:
             saveLog('db.log', e.response['Error']['Message'], 'error')
         else:
             return None if 'Item' not in response else response['Item']
+
+    def get_guilds_settings(self):
+        try:
+            response = self.client.get_item(TableName='guild_settings')
+        except ClientError as e:
+            saveLog('db.log', e.response['Error']['Message'], 'error')
+        else:
+            return None if 'Item' not in response else response['Item']
+
+    def save_guild_settings(self, guild_id, settings=None):
+        if settings is None:
+            settings = {}
+        table = self.res.Table('guild_settings')
+        response = table.put_item(
+            Item={
+                'guild_id': guild_id,
+                'settings': settings
+            }
+        )
+        return response
+
+    def create_guild_settings_table(self):
+        table_name = 'guild_settings'
+        existing_tables = self.client.list_tables()['TableNames']
+
+        if table_name not in existing_tables:
+            response = self.client.create_table(
+                AttributeDefinitions=[
+                    {
+                        'AttributeName': 'guild_id',
+                        'AttributeType': 'N',
+                    },
+                ],
+                KeySchema=[
+                    {
+                        'AttributeName': 'guild_id',
+                        'KeyType': 'HASH',
+                    },
+                ],
+                ProvisionedThroughput={
+                    'ReadCapacityUnits': 1,
+                    'WriteCapacityUnits': 1,
+                },
+                TableName=table_name,
+            )
+            saveLog('db.log', 'created guild_settings table')
