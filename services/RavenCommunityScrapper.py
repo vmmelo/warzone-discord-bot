@@ -88,21 +88,37 @@ class RavenCommunityScrapper:
         return notes_object
 
     async def send_updates_discord(self, post_id, posts_object, discord_client=None):
+        guild_settings = self.conn.get_guilds_settings()
         for post in posts_object:
             if not posts_object[post]['text']:
                 continue
             id = post_id + post
             id = ''.join(e for e in id if e.isalnum())
             if self.conn.get_update(id) is None:
-                # TODO translate text by guild
                 translations = posts_object[post]['translations']
-                text = posts_object[post]['text']
-                text_splitted = self.split_text_limit_characters(text)
-                for msg in text_splitted:
-                    await notify_channels(discord_client, msg)
+                guilds_not_english = []
+                for language in translations:
+                    guilds_language = self.get_guilds_use_language(language, guild_settings)
+                    if language != 'en':
+                        guilds_not_english = guilds_not_english + guilds_language
+                    text = translations[language]
+                    text_splitted = self.split_text_limit_characters(text)
+                    for msg in text_splitted:
+                        if language == 'en':
+                            await notify_channels(discord_client, msg, dont_send_to=guilds_not_english)
+                        else:
+                            await notify_channels(discord_client, msg, send_only_to=guilds_language, restricted=True)
                 for img in posts_object[post]['images']:
                     await notify_channels(discord_client, img)
                 self.conn.save_update(id, posts_object[post])
+
+    def get_guilds_use_language(self, language, guild_settings):
+        guilds_language = []
+        for (key, value) in guild_settings.items():
+            if value['language'] == language:
+                guilds_language.append(key)
+
+        return guilds_language
 
     def get_translations(self, posts_object):
         translator = Translator()

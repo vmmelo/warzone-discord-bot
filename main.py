@@ -51,6 +51,7 @@ class WarzoneDiscordBot(discord.Client):
                 if not language in supported_languages:
                     return await message.channel.send('We currently provide support in the following languages: ' + ', '.join(supported_languages))
                 self.conn.save_guild_settings(message.guild.id, {'language': language})
+                await message.channel.send(f'You now will receive Warzone Updates in {language}')
         except Exception as e:
             saveLog('WarzoneDiscordBot.log', str(e))
 

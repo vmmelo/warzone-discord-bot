@@ -124,11 +124,17 @@ class Connection:
 
     def get_guilds_settings(self):
         try:
-            response = self.client.get_item(TableName='guild_settings')
+            table = self.res.Table('guild_settings')
+            response = table.scan()
         except ClientError as e:
             saveLog('db.log', e.response['Error']['Message'], 'error')
         else:
-            return None if 'Item' not in response else response['Item']
+            if 'Items' not in response:
+                return []
+            result = {}
+            for item in response['Items']:
+                result[item['guild_id']] = item['settings']
+            return result
 
     def save_guild_settings(self, guild_id, settings=None):
         if settings is None:
