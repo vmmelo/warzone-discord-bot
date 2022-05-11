@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 from config.Logging import saveLog
 from services.TwitterIntegration import get_updates, search_twitter_updates
-from database.Connection import Connection
 from services.RavenCommunityScrapper import RavenCommunityScrapper
 import os
 from discord.ext import tasks, commands
@@ -16,7 +15,6 @@ class WarzoneDiscordBot(discord.Client):
 
         # start the task to run in the background
         self.search_updates.start()
-        self.conn = Connection()
 
     async def on_ready(self):
         saveLog('WarzoneDiscordBot.log', f'Logged in as {self.user.name} ({self.user.id})')

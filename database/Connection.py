@@ -36,7 +36,7 @@ class Connection:
             return boto3.resource('dynamodb', endpoint_url='http://localhost:8000')
 
     def create_tweets_table(self):
-        table_name = 'Tweets'
+        table_name = 'warzone_updates'
         existing_tables = self.client.list_tables()['TableNames']
 
         if table_name not in existing_tables:
@@ -87,21 +87,21 @@ class Connection:
             )
             saveLog('db.log', 'created loadouts table')
 
-    def save_tweet(self, tweet_id, content={}):
-        table = self.res.Table('Tweets')
+    def save_update(self, update_id, content={}):
+        table = self.res.Table('warzone_updates')
         current = datetime.datetime.now()
         response = table.put_item(
             Item={
-                'id': tweet_id,
+                'id': update_id,
                 'created_at': current.strftime('%Y-%m-%d %H:%M:%S'),
                 'content': content
             }
         )
         return response
 
-    def get_tweet(self, tweet_id):
+    def get_update(self, update_id):
         try:
-            response = self.client.get_item(TableName='Tweets', Key={'id': {'S': tweet_id}})
+            response = self.client.get_item(TableName='warzone_updates', Key={'id': {'S': update_id}})
         except ClientError as e:
             saveLog('db.log', e.response['Error']['Message'], 'error')
         else:

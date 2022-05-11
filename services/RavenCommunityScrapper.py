@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import textwrap
 import re
+from database.Connection import Connection
 from services.DiscordMessenger import notify_channels
 from googletrans import Translator
 
@@ -17,6 +18,7 @@ class RavenCommunityScrapper:
         pfc = community_soup.find_all(class_='post-feature-container')
         pc = community_soup.find_all(class_='post-container')
         self.posts = pfc + pc
+        self.conn = Connection()
 
     def get_post_updated_date(self, date_div):
         if date_div is not None:
@@ -85,19 +87,22 @@ class RavenCommunityScrapper:
                 notes_object[actual_section]['images'].append(self.format_content_url(src))
         return notes_object
 
-    async def send_updates_discord(self, posts_object, discord_client=None):
+    async def send_updates_discord(self, post_id, posts_object, discord_client=None):
         for post in posts_object:
             if not posts_object[post]['text']:
                 continue
-            # TODO check post already sent
-            if True:
+            id = post_id + post
+            id = ''.join(e for e in id if e.isalnum())
+            if self.conn.get_update(id) is None:
                 # TODO translate text by guild
+                translations = posts_object[post]['translations']
                 text = posts_object[post]['text']
                 text_splitted = self.split_text_limit_characters(text)
                 for msg in text_splitted:
                     await notify_channels(discord_client, msg)
                 for img in posts_object[post]['images']:
                     await notify_channels(discord_client, img)
+                self.conn.save_update(id, posts_object[post])
 
     def get_translations(self, posts_object):
         translator = Translator()
@@ -115,14 +120,17 @@ class RavenCommunityScrapper:
                                                       post.find(class_='post-date'))
             if updated_date is None:
                 continue
-            if updated_date > datetime.fromisoformat('2022-04-05'):
+
+            post_id = post.find(class_='post-header').get_text()
+            post_id = str(updated_date.year) + ''.join(e for e in post_id if e.isalnum())
+            if updated_date > datetime.fromisoformat('2022-05-03'):
                 content = self.get_post_content(self.format_content_url(post.find('a').attrs['href']))
                 if not content:
                     continue
                 if content.find(class_='blog-body'):
                     posts_object = self.read_patch_notes(content.find(class_='blog-body'))
                     posts_object = self.get_translations(posts_object)
-                    await self.send_updates_discord(posts_object, discord_client)
+                    await self.send_updates_discord(post_id, posts_object, discord_client)
 
                 if content.find(class_='blog-body-container'):
                     self.read_blog_article(content.find(class_='body-content'))

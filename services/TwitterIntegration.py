@@ -128,9 +128,9 @@ async def search_twitter_updates(client):
         number_of_updates_sent = 0
         if 'data' in warzone_recent_updates and len(warzone_recent_updates['data']) > 0:
             for update in warzone_recent_updates['data']:
-                if conn.get_tweet(update['id']) is None:
+                if conn.get_update(update['id']) is None:
                     await check_and_notify_channels(client, update)
-                    conn.save_tweet(update['id'], update)
+                    conn.save_update(update['id'], update)
                     number_of_updates_sent = number_of_updates_sent + 1
                     await send_log_discord_user(client, "New updates sent :)")
         else:
