@@ -128,6 +128,7 @@ class RavenCommunityScrapper:
             for target_language in target_languages:
                 posts_object[post]['translations'][target_language] = \
                     translator.translate(posts_object[post]['text'], src='en', dest=target_language).text
+            posts_object[post]['translations']['en'] = posts_object[post]['text']
         return posts_object
 
     async def search_updates_raven_website(self, discord_client=None):
