@@ -12,8 +12,8 @@ When new updates are released, the bot will create a new text channel on the ser
 
 
 
-### useful dev commands:
-#####Manage dynamodb locally
+### Useful dev commands:
+##### Manage dynamodb locally
 docker-compose up -d
 
 npm install -g dynamodb-admin
